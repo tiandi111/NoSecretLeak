@@ -1,18 +1,63 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
+var report = make([][]string, 0)
+
 func main() {
-	fmt.Println("我是——密钥")
-	secret := peepSecret("secret.txt")
-	code := readCode("main.go")
-	fmt.Println(code.content)
-	Report(scan(secret, code))
+	secretPath := flag.String("s", "", "secret filepath")
+	separator := flag.String("sep", "", "separator")
+
+	flag.Parse()
+
+	if *secretPath == "" {
+		fmt.Printf("Please indicate a path for secret!\n  Example: NoSecretLeak -s=secret\n")
+		return
+	}
+
+	if *separator == "" {
+		fmt.Printf("Please indicate a separator for secret!\n  Example: NoSecretLeak -sep=,\n")
+		return
+	}
+
+	path, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("Get current working directory failed: [%s]\n", err)
+		return
+	}
+
+	secret, err := PeepSecret(*secretPath)
+	if err != nil {
+		fmt.Printf("Get secret failed: [%s]\n", err)
+		return
+	}
+
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			code, errRC := ReadCode(path)
+			if errRC != nil {
+				return errRC
+			}
+			Scan(secret, code)
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("Error Encountered during walking: [%s]\n", err)
+	}
+
+	Report(report)
 }
 
 type File struct {
@@ -22,25 +67,28 @@ type File struct {
 
 // TODO: Recursively scan files under the current directory
 
-func peepSecret(path string) *File {
+func PeepSecret(path string) (*File, error) {
 	c, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(fmt.Sprintf("Read Secret failed: err[%s]\n", err))
+		return nil, err
 	}
+	//fmt.Printf("byte secret: [%v]", c)
 	// TODO: Different separators for different os
-	return &File{path, strings.Split(string(c), "\r\n")}
+	// for .txt file, use:
+	// 		\n for mac
+	//	  \r\n for windows
+	return &File{path, strings.Split(string(c), ",")}, nil
 }
 
-func readCode(path string) *File {
+func ReadCode(path string) (*File, error) {
 	c, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(fmt.Sprintf("Read code failed: err[%s]\n", err))
+		return nil, err
 	}
-	return &File{path, strings.Split(string(c), "\n")}
+	return &File{path, strings.Split(string(c), "\n")}, nil
 }
 
-func scan(s, c *File) [][]string {
-	report := make([][]string, 0)
+func Scan(s, c *File) {
 	secret := s.content
 	code := c.content
 	for i, line := 0, 1; i < len(code); i++{
@@ -59,12 +107,11 @@ func scan(s, c *File) [][]string {
 		}
 		line++
 	}
-	return report
 }
 
 func Report(report [][]string) {
 	if len(report) == 0 {
-		fmt.Print("No secret found, your code is safe to release!")
+		fmt.Print("No secret found, your code is safe to release!\n")
 	} else {
 		fmt.Println("Warning! Secrets found!")
 		fmt.Println("Secret Report: ")
