@@ -16,10 +16,9 @@ NoSecretLeak is the safeguard that helps you discover your secrets in your files
     go install
 ## Now you are ready to scan your files!
 ### Step4: Write your secret list
-    secret,
-    password,
-    weight,
+    secret,password,weight,
 An example of secret list is shown above. The comma is used to separate each secret, you can also use other separator as you like.
+**Ps: The only format that is supported by the current version is .txt file.**
 ### Step5: Run NoSecretLeak
     cd ~/dir  // cd to the directory your want to scan
     NoSecretLeak -s=secret -sep=,
@@ -31,4 +30,5 @@ Write secret path after -s flag and your separator after -sep flag.
     /Users/tiandi/go/src/github.com/tiandi111/NoSecretLeak/main.go | 70:22 | string
     /Users/tiandi/go/src/github.com/tiandi111/NoSecretLeak/secret | 1:1 | string
 ### Step7: Erase your secrets and showcase your work!
+After scanning, NoSecretLeak automatically delete secret list (if it doesn't, you will get warnings on your terminal). So don't worry and feel free to exhibit your work to the world!
     :)
