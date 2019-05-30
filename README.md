@@ -20,7 +20,7 @@ NoSecretLeak is the safeguard that helps you discover your secrets in your files
 An example of secret list is shown above. The comma is used to separate each secret, you can also use other separator as you like.
 **Ps: The only format that is supported by the current version is .txt file.**
 ### Step5: Run NoSecretLeak
-    cd ~/dir  // cd to the directory your want to scan
+    cd ~/dir  // cd to the directory you want to scan
     NoSecretLeak -s=secret -sep=,
 Write secret path after -s flag and your separator after -sep flag.
 ### Step6: Get your report 
