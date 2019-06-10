@@ -1,0 +1,24 @@
+#!/bin/bash
+
+command=""
+
+for var in "$@"
+do 
+	command="$command $var"
+done
+
+NoSecretLeak -s=~/secret -sep=,
+
+result=$?
+
+if ((result ==  3))
+ then
+	echo "Secret found in your code, 'git push' is aborted!"
+	exit 8
+elif ((result == 4))
+ then
+	echo "Execute 'NoSecretLeak' failed, please check your command and try again."
+	exit 8
+fi
+
+git push $command

@@ -20,24 +20,24 @@ func main() {
 
 	if *secretPath == "" {
 		fmt.Printf("Please indicate a path for secret!\n  Example: NoSecretLeak -s=secret\n")
-		return
+		os.Exit(4)
 	}
 
 	if *separator == "" {
 		fmt.Printf("Please indicate a separator for secret!\n  Example: NoSecretLeak -sep=,\n")
-		return
+		os.Exit(4)
 	}
 
 	path, err := os.Getwd()
 	if err != nil {
 		fmt.Printf("Get current working directory failed: [%s]\n", err)
-		return
+		os.Exit(4)
 	}
 
 	secret, err := PeepSecret(*secretPath, *separator)
 	if err != nil {
 		fmt.Printf("Get secret failed: [%s]\n", err)
-		return
+		os.Exit(4)
 	}
 
 	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -54,8 +54,11 @@ func main() {
 		return nil
 	})
 	if err != nil {
-		fmt.Printf("Error Encountered during walking: [%s]\n", err)
+		fmt.Printf("Error Encountered during walking : [%s]\n", err)
+		fmt.Printf("Files under current directories may not be fully scaned, your are recommended to scan secret again\n")
 	}
+
+	Report(report)
 
 	errRemoveSecret := os.Remove(*secretPath)
 	if errRemoveSecret != nil {
@@ -63,10 +66,14 @@ func main() {
 		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
 		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
 		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
-		return
+	} else {
+		fmt.Println("Secret file is deleted!")
 	}
 
-	Report(report)
+	// Secret found, using 3 to indicate
+	if len(report) > 0 {
+		os.Exit(3)
+	}
 }
 
 type File struct {
@@ -100,7 +107,7 @@ func Scan(s, c *File) {
 	code := c.content
 	for i, line := 0, 1; i < len(code); i++{
 		for j, column := 0, 1; j < len(code[i]); j++ {
-			if(code[i][j] == 9) {
+			if code[i][j] == 9 {
 				column += 3
 			}
 			for k := 0; k < len(secret); k++ {
@@ -108,7 +115,7 @@ func Scan(s, c *File) {
 				//if j+l <= len(code[i]) {
 				//	fmt.Println(code[i][j:j+l], secret[k])
 				//}
-				if( j+l <= len(code[i]) && strings.EqualFold(code[i][j:j+l], secret[k]) ) {
+				if j+l <= len(code[i]) && strings.EqualFold(code[i][j:j+l], secret[k])  {
 					report = append(report,
 						[]string{c.path, strconv.Itoa(line)+":"+strconv.Itoa(column), secret[k]})
 				}
@@ -121,7 +128,7 @@ func Scan(s, c *File) {
 
 func Report(report [][]string) {
 	if len(report) == 0 {
-		fmt.Print("No secret found, your code is safe to release!\nSecret list is deleted, enjoy your coding :)\n")
+		fmt.Print("No secret found, your code is safe to release!\n")
 	} else {
 		fmt.Println("Warning! Secrets found!")
 		fmt.Println("Secret Report: ")
