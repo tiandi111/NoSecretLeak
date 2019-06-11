@@ -48,8 +48,9 @@ Language: [English](#NoSecretLeak), [中文](#NoSecretLeak防止秘密泄露)
     
 ### 步骤三：使用‘git safepush’命令
 使用该命令时，除了在push前会检测关键信息外，与‘git push’命令没有任何区别
+
     $ git safepush origin master    
-如果有关键信息被检测到，则会看到如下输出：
+如果有关键信息被检测到，则会看到如下输出，可以看到因为有关键信息被检测出来，此次push被取消。：
 
     Warning! Secrets found!
     Secret Report: 
@@ -58,9 +59,6 @@ Language: [English](#NoSecretLeak), [中文](#NoSecretLeak防止秘密泄露)
     /Users/tiandi/go/src/github.com/tiandi111/NoSecretLeak/.git/logs/HEAD | 5:172 | string
     /Users/tiandi/go/src/github.com/tiandi111/NoSecretLeak/.git/logs/refs/heads/master | 5:172 | string
     Secret found in your code, 'git push' is aborted!
-
-可以看到因为有关键信息被检测出来，此次push被取消。
-
 如果没有关键信息被检测到，会看到如下输出：
     
     No secret found, your code is safe to release!
