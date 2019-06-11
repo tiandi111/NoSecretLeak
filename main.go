@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	//"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,6 +16,7 @@ var report = make([][]string, 0)
 func main() {
 	secretPath := flag.String("s", "", "secret filepath")
 	separator := flag.String("sep", "", "separator")
+	del := flag.Bool("d", false, "indicate whether to delete the secret file after scanning")
 
 	flag.Parse()
 
@@ -34,16 +36,19 @@ func main() {
 		os.Exit(4)
 	}
 
+	// Extract wordlist from secret file
 	secret, err := PeepSecret(*secretPath, *separator)
 	if err != nil {
-		fmt.Printf("Get secret failed: [%s]\n", err)
+		fmt.Printf("Get secret failed: filepath: [%s] err: [%s]\n", *secretPath, err)
 		os.Exit(4)
 	}
 
+	// Recursively traverse all files under current working directory
 	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+		// secret file is skipped
 		if !info.IsDir() && info.Name() != secret.path {
 			code, errRC := ReadCode(path)
 			if errRC != nil {
@@ -54,23 +59,26 @@ func main() {
 		return nil
 	})
 	if err != nil {
-		fmt.Printf("Error Encountered during walking : [%s]\n", err)
+		fmt.Printf("Error Encountered during walking: [%s]\n", err)
 		fmt.Printf("Files under current directories may not be fully scaned, your are recommended to scan secret again\n")
 	}
 
+	// Print report to user
 	Report(report)
 
-	errRemoveSecret := os.Remove(*secretPath)
-	if errRemoveSecret != nil {
-		fmt.Printf("Secret file auto-delete failed: [%s]\n", errRemoveSecret)
-		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
-		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
-		fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
-	} else {
-		fmt.Println("Secret file is deleted!")
+	if *del {
+		errRemoveSecret := os.Remove(*secretPath)
+		if errRemoveSecret != nil {
+			fmt.Printf("Secret file auto-delete failed: [%s]\n", errRemoveSecret)
+			fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
+			fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
+			fmt.Printf("Warning! Secret file auto-delete failed, plesat delete it manully!")
+		} else {
+			fmt.Println("Secret file is deleted!")
+		}
 	}
 
-	// Secret found, using 3 to indicate
+	// Secret found, using exit code 3 to indicate bash script
 	if len(report) > 0 {
 		os.Exit(3)
 	}
@@ -86,10 +94,13 @@ func PeepSecret(path, sep string) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Printf("byte secret: [%v]", c)
-	content := strings.Split(string(c), sep)
-	if content[len(content)-1] == "" {
-		content = content[:len(content)-1]
+	raw := strings.Split(string(c[:len(c)-1]), sep)
+	content := make([]string, 0)
+	for i := 0; i<len(raw); i++ {
+		if raw[i] == "" {
+			continue
+		}
+		content = append(content, raw[i])
 	}
 	return &File{path, content}, nil
 }
@@ -112,9 +123,6 @@ func Scan(s, c *File) {
 			}
 			for k := 0; k < len(secret); k++ {
 				l := len(secret[k])
-				//if j+l <= len(code[i]) {
-				//	fmt.Println(code[i][j:j+l], secret[k])
-				//}
 				if j+l <= len(code[i]) && strings.EqualFold(code[i][j:j+l], secret[k])  {
 					report = append(report,
 						[]string{c.path, strconv.Itoa(line)+":"+strconv.Itoa(column), secret[k]})

@@ -7,7 +7,9 @@ do
 	command="$command $var"
 done
 
-NoSecretLeak -s=~/secret -sep=,
+# Set file path for secret file and separator
+# if -d is set, secret file will be deleted after scanning
+NoSecretLeak -s=/Users/tiandi/secret -sep=,
 
 result=$?
 
