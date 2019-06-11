@@ -35,9 +35,11 @@ The bash script is named as git-safepush which can be recognized by git.
 I recommend you to put the script in ~/go/bin. You can also put it anywhere as long as it is set to enviroment variable.
 ### Step2: Customized your script
 Inside the script, you will see this line where you can customized your NoSecretLeak command.
+
     # Set file path for secret file and separator
     # if -d is set, secret file will be deleted after scanning
     NoSecretLeak -s=/Users/tiandi/secret -sep=,
+    
 ### Step3: Push your code by 'git safepush'
     git safepush origin master
 ## Erase your secrets and showcase your work!
