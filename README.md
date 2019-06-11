@@ -1,3 +1,5 @@
+Language: [English](#NoSecretLeak), 中文
+
 # NoSecretLeak
 How many times have you pushed your code to github but found that there's personal information, secret key, password and so on
 that should not be exposed to public? You have to delete them from your code and push again or even worse, somebody stolen it before
