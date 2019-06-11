@@ -21,7 +21,9 @@ Language: [English](#NoSecretLeak), [中文](#NoSecretLeak防止秘密泄露)
     cd ~/dir  // cd to the directory you want to scan
     NoSecretLeak -d -s=secret -sep=, // if -d is set, secret file will be deleted after scanning
 -s标志位后填写关键信息wordlist的路径
+
 -d标志位用来设置是否在检测完成后自动删除wordlist文件
+
 -sep标志位用来自定义分隔符
 ### 步骤三：输出报告
     Warning! Secrets found!
@@ -32,8 +34,11 @@ Language: [English](#NoSecretLeak), [中文](#NoSecretLeak防止秘密泄露)
 
 ## 作为GIT插件使用
 项目中命名为git-safepush的脚本可作为git插件使用。
-### 步骤一：下载插件并将其所在文件夹设置为环境变量
+### 步骤一：下载插件，设置环境变量，赋予权限
 建议直接将其放在GO的Workspace下的bin文件中（~/go/bin），省去设置环境变量的步骤。
+进入脚本所在文件夹，使用如下命令设置权限：
+
+    $ chmod u+x safe-push
 ### 步骤二：自定义脚本
 在脚本中有如下代码，可以通过编辑这行代码设置运行NoSecretLeak的命令。
 
@@ -55,6 +60,7 @@ Language: [English](#NoSecretLeak), [中文](#NoSecretLeak防止秘密泄露)
     Secret found in your code, 'git push' is aborted!
 
 可以看到因为有关键信息被检测出来，此次push被取消。
+
 如果没有关键信息被检测到，会看到如下输出：
     
     No secret found, your code is safe to release!
