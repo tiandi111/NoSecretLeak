@@ -30,6 +30,7 @@ func main() {
 		os.Exit(4)
 	}
 
+	// Get current working directory
 	path, err := os.Getwd()
 	if err != nil {
 		fmt.Printf("Get current working directory failed: [%s]\n", err)
@@ -48,7 +49,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		// secret file is skipped
+		// secret file itself is skipped
 		if !info.IsDir() && info.Name() != secret.path {
 			code, errRC := ReadCode(path)
 			if errRC != nil {
