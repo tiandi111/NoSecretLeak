@@ -53,6 +53,7 @@ func main() {
 		if !info.IsDir() && info.Name() != secret.path {
 			code, errRC := ReadCode(path)
 			if errRC != nil {
+				fmt.Println(info.IsDir())
 				return errRC
 			}
 			Scan(secret, code)
@@ -109,7 +110,7 @@ func PeepSecret(path, sep string) (*File, error) {
 func ReadCode(path string) (*File, error) {
 	c, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ReadCode failed: err[%s]", err)
 	}
 	return &File{path, strings.Split(string(c), "\n")}, nil
 }
